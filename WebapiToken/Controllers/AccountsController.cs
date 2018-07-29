@@ -100,6 +100,13 @@ namespace WebapiToken.Controllers
                         account.password = pass1;
                         account.password2 = pass2;
                         int val = await db.SaveChangesAsync();
+                        //search  from list report
+                        var findListReport = db.report_account.Where(a => a.account_id == account.id).FirstOrDefault();
+                        if(findListReport!= null)
+                        {
+                            db.Entry(findListReport).State = System.Data.Entity.EntityState.Deleted;
+                            await db.SaveChangesAsync();
+                        }
                         if (val > 0)
                             return Ok(await FetchDetailsAccount.GetDetailsAccount(id));
                         else
