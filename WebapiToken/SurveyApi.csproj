@@ -149,6 +149,7 @@
     <Compile Include="AuthorizeAttribute.cs" />
     <Compile Include="Controllers\AccountsController.cs" />
     <Compile Include="Controllers\AsksController.cs" />
+    <Compile Include="Controllers\DashbroadController.cs" />
     <Compile Include="Controllers\FacultyClassroomController.cs" />
     <Compile Include="Controllers\FAQsController.cs" />
     <Compile Include="Controllers\FeedbacksController.cs" />
@@ -156,7 +157,6 @@
     <Compile Include="Controllers\SurveysController.cs" />
     <Compile Include="Controllers\UploadMediaController.cs" />
     <Compile Include="Controllers\UserResponesController.cs" />
-    <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="FuncProcess\ProcessAccount\DeleteAccount.cs" />
     <Compile Include="FuncProcess\ProcessAccount\FetchDetailsAccount.cs" />
     <Compile Include="FuncProcess\ProcessAccount\FetchDetailsAdmin.cs" />
@@ -239,6 +239,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Dashboard\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -61,7 +61,7 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                                                     text = c.text,
                                                                     create_at = c.create_at
                                                                 }).FirstOrDefault()
-                                                    }).ToList()
+                                                    }).FirstOrDefault()
                           }).FirstOrDefault();
             return survey;
         }
@@ -123,6 +123,13 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                    description = a.description,
                                    thumb = a.thumb,
                                    date_start = a.date_start,
+                                   total_questions = db.questions.Where(b => b.surveys_id == a.id).Count(),
+                                   surveys_type = db.surveys_type.Where(b => b.id == a.surveys_type_id)
+                                                    .Select(b => new {
+                                                        id = b.id,
+                                                        name = b.name,
+                                                        create_at = b.create_at
+                                                    }).FirstOrDefault(),
                                    joiner = db.surveys_response.Where(b => b.surveys_id == a.id).Select(b => new
                                    {
                                        id = b.id,
@@ -133,10 +140,11 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                        .Select(c=> new {
                                            id = c.id,
                                            question_id = c.question_id,
+                                           questions_title = db.questions.Where(v => v.id == c.question_id).Select(v => v.text).FirstOrDefault(),
                                            question_text_id = c.question_id,
                                            account_id = c.accounts_id,
                                            surveys_response_id = c.surveys_response_id,
-                                           text = c.text,
+                                           answer = c.text,
                                            create_at = c.create_at
                                        }).FirstOrDefault(),
                                        userinfo = db.details.Where(c => c.account_id == b.accounts_id).Select(c => new
@@ -149,6 +157,7 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                        username = b.username,
                                        create_at = b.create_at
                                    }).ToList(),
+                                   total_joinners = db.surveys_response.Where(b => b.surveys_id == a.id).Select(b=>b).Count(),
                                    create_at = a.create_at
                                }).FirstOrDefault();
                 return message;
@@ -169,6 +178,13 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                    description = a.description,
                                    thumb = a.thumb,
                                    date_start = a.date_start,
+                                   total_questions = db.questions.Where(b => b.surveys_id == a.id).Count(),
+                                   surveys_type = db.surveys_type.Where(b => b.id == a.surveys_type_id)
+                                                    .Select(b => new {
+                                                        id = b.id,
+                                                        name = b.name,
+                                                        create_at = b.create_at
+                                                    }).FirstOrDefault(),
                                    joiner = db.surveys_response.Where(b => b.surveys_id == a.id).Select(b => new
                                    {
                                        id = b.id,
@@ -179,8 +195,9 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                        .Select(c => new {
                                            id = c.id,
                                            question_id = c.question_id,
+                                           questions_title = db.questions.Where(v => v.id == c.question_id).Select(v => v.text).FirstOrDefault(),
                                            question_choice_id = c.question_choice_id,
-                                           text = db.question_choice.Where(d => d.question_id == c.question_id && d.id == c.question_choice_id).Select(d => d.description)
+                                           answer = db.question_choice.Where(d => d.question_id == c.question_id && d.id == c.question_choice_id).Select(d => d.description)
                                            .FirstOrDefault(),
                                            account_id = c.accounts_id,
                                            surveys_response_id = c.surveys_response_id,
@@ -196,6 +213,7 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                        username = b.username,
                                        create_at = b.create_at
                                    }).ToList(),
+                                   total_joinners = db.surveys_response.Where(b => b.surveys_id == a.id).Select(b=>b).Count(),
                                    create_at = a.create_at
                                }).FirstOrDefault();
                 return message;
@@ -211,7 +229,7 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                  where a.id == b.surveys_id && b.id == id && b.username == username
                                  select new {
                                      id = a.id,
-                                     surveys_id = a.surveys_type_id,
+                                     surveys_type_id = a.surveys_type_id,
                                      title = a.title,
                                      description = a.description,
                                      thumb = a.thumb,
@@ -220,10 +238,11 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                      questions = db.question_text_response
                                         .Where(c=>c.surveys_response_id == b.id && c.accounts_id == b.accounts_id).Select(c=>new {
                                             id = c.id,
-                                            question_text_ida = c.question_text_id,
+                                            questions_title = db.questions.Where(v => v.id == c.question_id).Select(v => v.text).FirstOrDefault(),
+                                            question_text_id = c.question_text_id,
                                             question_id = c.question_id,
                                             accounts_id = c.accounts_id,
-                                            text = c.text,
+                                            answer = c.text,
                                             create_at = b.create_at
                                         }).FirstOrDefault(),
                                      userinfo = db.details.Where(c => c.account_id == b.accounts_id).Select(c => new
@@ -235,7 +254,10 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                      }).FirstOrDefault(),
                                      create_at = a.create_at
                                  }).FirstOrDefault();
-                return surveyRes;
+                if (surveyRes != null)
+                    return surveyRes;
+                else
+                    return null;
             }
         }
         public static async Task<object> DetailsSurveyUserChoice(int id, string username)
@@ -248,7 +270,7 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                  select new
                                  {
                                      id = a.id,
-                                     surveys_id = a.surveys_type_id,
+                                     surveys_type_id = a.surveys_type_id,
                                      title = a.title,
                                      description = a.description,
                                      thumb = a.thumb,
@@ -257,10 +279,11 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                      questions = db.question_choice_response
                                             .Where(c => c.surveys_response_id == b.id && c.accounts_id == b.accounts_id).Select(c => new {
                                                id = b.id,
-                                               question_text_id = c.question_choice_id,
+                                               questions_title = db.questions.Where(v => v.id == c.question_id).Select(v => v.text).FirstOrDefault(),
+                                               question_choice_id = c.question_choice_id,
                                                question_id = c.question_id,
                                                accounts_id = c.accounts_id,
-                                               text = db.question_choice.Where(d => d.id == c.question_choice_id).Select(d => d.description).FirstOrDefault(),
+                                                answer = db.question_choice.Where(d => d.id == c.question_choice_id).Select(d => d.description).FirstOrDefault(),
                                                create_at = c.create_at
                                             }).ToList()
                                             ,
@@ -273,7 +296,10 @@ namespace WebapiToken.FuncProcess.ProcessSurvey
                                      }).FirstOrDefault(),
                                      create_at = a.create_at
                                  }).FirstOrDefault();
-                return surveyRes;
+                if (surveyRes != null)
+                    return surveyRes;
+                else
+                    return null;
             }
         }
 

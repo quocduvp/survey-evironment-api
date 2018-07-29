@@ -14,7 +14,7 @@ namespace WebapiToken.Controllers
     {
         //model
         private DBS db = new DBS();
-        //api created cau tra loi kieu choice va text
+        //api created answer choice and text
         [Authorize(Roles = "admin")]
         [HttpPost]
         [Route("api/v1/admin/question/{id}/choice")]
@@ -59,21 +59,20 @@ namespace WebapiToken.Controllers
         {
             try
             {
-                //chỉ kiểm tra thg question có tồn tại hay không thoi va check question dang text
+                //check question found and survey type is text
                 var findQuestion = (from a in db.questions
                                     from b in db.surveys
                                     where a.surveys_id == b.id && a.id == id && b.surveys_type_id == 0
                                     select a).FirstOrDefault();
-                //nếu tồn tại tiến hành thêm câu hỏi của  question đó vào csdl
+                //if != null insert to db
                 if (findQuestion != null)
                 {
-                    //them vao csdl description
                     question_text form = new question_text();
                     form.text = "Let me know your opinion!";
                     form.question_id = findQuestion.id;
                     form.create_at = DateTime.Now;
                     db.question_text.Add(form);
-                    int check = await db.SaveChangesAsync(); //save lai
+                    int check = await db.SaveChangesAsync(); //save
                     if (check > 0)
                         return Ok(await FetchDetailsSurvey.GetDetailsSurvey(Convert.ToInt32(findQuestion.surveys_id)));
                     else

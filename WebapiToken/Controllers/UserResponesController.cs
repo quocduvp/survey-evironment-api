@@ -17,7 +17,7 @@ namespace WebapiToken.Controllers
         private static DBS db = new DBS();
         [Authorize(Roles = "admin,student,staff")]
         [HttpGet]
-        [Route("api/v1/survey/resonse/{id}")]
+        [Route("api/v1/survey/response/{id}")]
         public async Task<IHttpActionResult> DetailsSurveysResponse(int id)
         {
             var findSurvey = (from a in db.surveys
@@ -44,22 +44,25 @@ namespace WebapiToken.Controllers
             }
         }
 
-        //student and staff join
+        //student and staff submit joining surveys
         [Authorize(Roles = "student,staff")]
         [HttpPost]
         [Route("api/v1/survey/join/{id}")]
         public async Task<IHttpActionResult> CreateSurveysResponse(int id)
         {
+            //find and check username
             var identity = (ClaimsIdentity)User.Identity;
             var username = identity.Claims.Where(a => a.Type == ClaimTypes.Name).Select(c => c.Value).FirstOrDefault();
             var findUser = db.accounts.Where(a => a.username == username).FirstOrDefault();
             if(findUser != null)
             {
+                //find survey with date start less than current date
                 var findSurvey = db.surveys.Where(a => a.id == id && 
                 a.date_start <= DateTime.Now &&
                 a.deleted == false && a.publish == true).FirstOrDefault();
                 if (findSurvey != null)
                 {
+                    //find this user joined if not join create else update
                     var findMessage = db.surveys_response.Where(a => a.surveys_id == id && a.accounts_id == findUser.id).FirstOrDefault();
                     if (findMessage == null) {
                         surveys_response form = new surveys_response();
@@ -128,7 +131,7 @@ namespace WebapiToken.Controllers
                         {
                             //tim xem da co cau tra loi chua
                             var findQuestionRes = db.question_text_response
-                                .Where(a => a.accounts_id == findUser.id && a.question_text_id == question.id).FirstOrDefault();
+                                .Where(a => a.accounts_id == findUser.id && a.question_id == question.question_id).FirstOrDefault();
                             if (findQuestionRes == null)
                             {
                                 question_text_response text = new question_text_response();
@@ -190,7 +193,7 @@ namespace WebapiToken.Controllers
                         {
                             //tim xem da co cau tra loi chua
                             var findQuestionRes = db.question_choice_response
-                                .Where(a => a.accounts_id == findUser.id && a.question_choice_id == question.id).FirstOrDefault();
+                                .Where(a => a.accounts_id == findUser.id && a.question_id == question.question_id).FirstOrDefault();
                             if (findQuestionRes == null)
                             {
                                 question_choice_response choice = new question_choice_response();
@@ -298,7 +301,7 @@ namespace WebapiToken.Controllers
             {
                 var findSurvey = (from a in db.surveys
                                   from b in db.surveys_response
-                                  where a.id == b.surveys_id && b.id == id && b.username == username
+                                  where a.id == b.surveys_id && a.id == id && b.username == username
                                   && a.date_start <= DateTime.Now && a.deleted == false && a.publish == true
                                   select a).FirstOrDefault();
                 if (findSurvey != null)
