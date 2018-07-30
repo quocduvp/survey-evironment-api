@@ -139,6 +139,7 @@ namespace WebapiToken.Controllers
                 return BadRequest("Error.");
             }
         }
+
         [Authorize(Roles = "admin")]
         [HttpPut]
         [Route("api/v1/admin/classroom/{id}")]
@@ -168,6 +169,7 @@ namespace WebapiToken.Controllers
                 return BadRequest("Error.");
             }
         }
+
         [Authorize(Roles = "admin")]
         [HttpDelete]
         [Route("api/v1/admin/classroom/{id}")]
@@ -202,7 +204,8 @@ namespace WebapiToken.Controllers
                 return BadRequest("Error.");
             }
         }
-        [Authorize(Roles = "admin")]
+
+        [Authorize(Roles = "admin,student,staff")]
         [HttpGet]
         [Route("api/v1/all/classroom")]
         public async Task<IHttpActionResult> GetAllClass([FromBody]classroom form)

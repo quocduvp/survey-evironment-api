@@ -301,8 +301,7 @@ namespace WebapiToken.Controllers
             {
                 var findSurvey = (from a in db.surveys
                                   from b in db.surveys_response
-                                  where a.id == b.surveys_id && a.id == id && b.username == username
-                                  && a.date_start <= DateTime.Now && a.deleted == false && a.publish == true
+                                  where a.id == b.surveys_id && b.id == id && b.username == username
                                   select a).FirstOrDefault();
                 if (findSurvey != null)
                 {
