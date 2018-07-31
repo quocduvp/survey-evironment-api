@@ -12,6 +12,7 @@ namespace WebapiToken.Controllers
     public class FacultyClassroomController : ApiController
     {
         private DBS db = new DBS();
+        //create new faculty
         [Authorize(Roles = "admin")]
         [HttpPost]
         [Route("api/v1/admin/faculty")]
@@ -34,6 +35,7 @@ namespace WebapiToken.Controllers
             }
         }
 
+        //Update faculty
         [Authorize(Roles = "admin")]
         [HttpPut]
         [Route("api/v1/admin/faculty/{id}")]
@@ -65,6 +67,7 @@ namespace WebapiToken.Controllers
             }
         }
 
+        //Delete faculty
         [Authorize(Roles = "admin")]
         [HttpDelete]
         [Route("api/v1/admin/faculty/{id}")]
@@ -100,6 +103,7 @@ namespace WebapiToken.Controllers
             }
         }
 
+        //Get all faculty
         [Authorize(Roles = "admin,student,staff")]
         [HttpGet]
         [Route("api/v1/all/faculty")]
@@ -119,6 +123,7 @@ namespace WebapiToken.Controllers
         /// Class room
         /// </summary>
         /// <returns></returns>
+        /// Create new class
         [Authorize(Roles = "admin")]
         [HttpPost]
         [Route("api/v1/admin/classroom")]
@@ -140,6 +145,7 @@ namespace WebapiToken.Controllers
             }
         }
 
+        //update class
         [Authorize(Roles = "admin")]
         [HttpPut]
         [Route("api/v1/admin/classroom/{id}")]
@@ -170,6 +176,7 @@ namespace WebapiToken.Controllers
             }
         }
 
+        //delete class
         [Authorize(Roles = "admin")]
         [HttpDelete]
         [Route("api/v1/admin/classroom/{id}")]
@@ -205,6 +212,7 @@ namespace WebapiToken.Controllers
             }
         }
 
+        //Get all class
         [Authorize(Roles = "admin,student,staff")]
         [HttpGet]
         [Route("api/v1/all/classroom")]
@@ -219,7 +227,7 @@ namespace WebapiToken.Controllers
                 return BadRequest("Error.");
             }
         }
-        //list
+        //list faculty
         public async Task<object> ListFaculty()
         {
             var fac = db.faculties.Select(a => new
@@ -232,7 +240,7 @@ namespace WebapiToken.Controllers
             }).ToList();
             return fac;
         }
-        //
+        //list class 
         public async Task<object> ListClassroom()
         {
             var list = db.classrooms.Select(a=> new {
