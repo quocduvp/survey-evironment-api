@@ -24,16 +24,29 @@ namespace WebapiToken.Controllers
                 var findSurvey = db.surveys.Where(a => a.id == form.surveys_id).FirstOrDefault();
                 if (findSurvey != null)
                 {
-                    form.create_at = DateTime.Now;
-                    db.questions.Add(form);
-                    int check = await db.SaveChangesAsync();
-                    if (check > 0)
+                    //check title duplicate
+                    var check_title = db.questions
+                            .Where(a => a.text.ToString().ToLower() == form.text.ToString().ToLower() && a.surveys_id == findSurvey.id).FirstOrDefault();
+                    if (check_title == null)
                     {
-                        return Ok(await FetchDetailsSurvey.GetDetailsSurvey(findSurvey.id));
+                        if (form.priority <= 0)
+                            form.priority = 1;
+
+                        form.create_at = DateTime.Now;
+                        db.questions.Add(form);
+                        int check = await db.SaveChangesAsync();
+                        if (check > 0)
+                        {
+                            return Ok(await FetchDetailsSurvey.GetDetailsSurvey(findSurvey.id));
+                        }
+                        else
+                        {
+                            return BadRequest("Create question error.");
+                        }
                     }
                     else
                     {
-                        return BadRequest("Create question error.");
+                        return BadRequest("Title question dupticate");
                     }
                 }
                 else
@@ -44,7 +57,6 @@ namespace WebapiToken.Controllers
                 return BadRequest("Error question.");
             }
         }
-        //thag khoa lam toi qua
         //update question
         [Authorize(Roles = "admin")]
         [HttpPut]
@@ -54,18 +66,29 @@ namespace WebapiToken.Controllers
             var todo = db.questions.Where(a => a.id == id).FirstOrDefault();
             if (todo != null)
             {
-                todo.priority = form.priority;
-                todo.text = form.text;
-                todo.create_at = DateTime.Now;
-
-                int check = await db.SaveChangesAsync();
-                if (check > 0)
+                var otherQuestion = db.questions.Where(a => a.text.ToString().ToLower() == form.text.ToString().ToLower() && a.id != id).FirstOrDefault();
+                if (otherQuestion == null)
                 {
-                    return Ok(await FetchDetailsSurvey.GetDetailsSurvey(Convert.ToInt32(todo.surveys_id)));
+                    if (form.priority <= 0)
+                        todo.priority = 1;
+                    else
+                        todo.priority = form.priority;
+                    todo.text = form.text;
+                    todo.create_at = DateTime.Now;
+
+                    int check = await db.SaveChangesAsync();
+                    if (check > 0)
+                    {
+                        return Ok(await FetchDetailsSurvey.GetDetailsSurvey(Convert.ToInt32(todo.surveys_id)));
+                    }
+                    else
+                    {
+                        return BadRequest("Update fails.");
+                    }
                 }
                 else
                 {
-                    return BadRequest("Update fails.");
+                    return BadRequest("Title question dupticate");
                 }
             }
 
@@ -90,7 +113,7 @@ namespace WebapiToken.Controllers
                 {
                     //find question
                     var question = db.questions.Where(a => a.id == id).FirstOrDefault();
-                    //tim cau hoi lien quan
+                    //find answers for question
                     var ask = db.question_text.Where(a => a.question_id == question.id).FirstOrDefault();
                     var findResponse = (from a in db.question_text_response
                                         where a.question_id == question.id

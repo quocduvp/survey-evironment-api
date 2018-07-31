@@ -10,7 +10,7 @@ using WebapiToken.Models;
 
 namespace WebapiToken.Controllers
 {
-    public class AsksController : ApiController
+    public class AnswersController : ApiController
     {
         //model
         private DBS db = new DBS();
@@ -28,15 +28,25 @@ namespace WebapiToken.Controllers
                                     where a.surveys_id == b.id && a.id == idQuestion && b.surveys_type_id == 1 select a).FirstOrDefault();
                 if (findQuestion != null)
                 {
-                    form.question_id = findQuestion.id;
-                    form._checked = false;
-                    form.create_at = DateTime.Now;
-                    db.question_choice.Add(form);
-                    int check = await db.SaveChangesAsync(); //save
-                    if (check > 0)
-                        return Ok(await FetchDetailsSurvey.GetDetailsSurvey(Convert.ToInt32(findQuestion.surveys_id)));
+                    //find check answer duplicate
+                    var answer_title = db.question_choice
+                        .Where(a => a.description.ToString().ToLower() == form.description.ToString().ToLower()).FirstOrDefault();
+                    if (answer_title == null)
+                    {
+                        form.question_id = findQuestion.id;
+                        form._checked = false;
+                        form.create_at = DateTime.Now;
+                        db.question_choice.Add(form);
+                        int check = await db.SaveChangesAsync(); //save
+                        if (check > 0)
+                            return Ok(await FetchDetailsSurvey.GetDetailsSurvey(Convert.ToInt32(findQuestion.surveys_id)));
+                        else
+                            return BadRequest("Create Answer fails");
+                    }
                     else
-                        return BadRequest("Create Answer fails");
+                    {
+                        return BadRequest("Answer duplicate.");
+                    }
                 }
                 else
                 {
@@ -88,7 +98,7 @@ namespace WebapiToken.Controllers
             }
         }
 
-        //update answer type choice choice
+        //update answer type choice
         [Authorize(Roles = "admin")]
         [HttpPut]
         [Route("api/v1/admin/question/{idQuestion}/choice/{idAnswer}")]
@@ -99,16 +109,25 @@ namespace WebapiToken.Controllers
                                 select a).FirstOrDefault();
             if(findQuestion != null)
             {
-                var ask = db.question_choice.Where(a => a.id == idAnswer && a.question_id == findQuestion.id).FirstOrDefault();
-                if (ask != null)
+                var answers = db.question_choice.Where(a => a.id == idAnswer && a.question_id == findQuestion.id).FirstOrDefault();
+                if (answers != null)
                 {
-                    ask.description = form.description;
-                    db.Entry(ask).State = System.Data.Entity.EntityState.Modified;
-                    int check = await db.SaveChangesAsync();
-                    if (check > 0)
-                        return Ok(await FetchDetailsSurvey.GetDetailsSurvey(Convert.ToInt32(findQuestion.surveys_id)));
+                    var answer_title = db.question_choice
+                       .Where(a => a.description.ToString().ToLower() == form.description.ToString().ToLower() && a.id != idAnswer).FirstOrDefault();
+                    if (answer_title == null)
+                    {
+                        answers.description = form.description;
+                        db.Entry(answers).State = System.Data.Entity.EntityState.Modified;
+                        int check = await db.SaveChangesAsync();
+                        if (check > 0)
+                            return Ok(await FetchDetailsSurvey.GetDetailsSurvey(Convert.ToInt32(findQuestion.surveys_id)));
+                        else
+                            return BadRequest("Update ask error.");
+                    }
                     else
-                        return BadRequest("Update ask error.");
+                    {
+                        return BadRequest("Answer duplicate");
+                    }
                 }
                 else
                 {

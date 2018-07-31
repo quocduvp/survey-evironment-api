@@ -148,7 +148,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="AuthorizeAttribute.cs" />
     <Compile Include="Controllers\AccountsController.cs" />
-    <Compile Include="Controllers\AsksController.cs" />
+    <Compile Include="Controllers\AnswersController.cs" />
     <Compile Include="Controllers\DashbroadController.cs" />
     <Compile Include="Controllers\FacultyClassroomController.cs" />
     <Compile Include="Controllers\FAQsController.cs" />
@@ -230,6 +230,7 @@
     <Content Include="Views\web.config" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\survey-service-api - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\survey-service-api - Web Deploy1.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

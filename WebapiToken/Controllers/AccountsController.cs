@@ -160,6 +160,7 @@ namespace WebapiToken.Controllers
             }
 
         }
+
         //profile admin
         [Authorize(Roles = "admin")]
         [HttpGet]

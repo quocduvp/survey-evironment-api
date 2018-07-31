@@ -84,7 +84,7 @@ namespace WebapiToken.Controllers
             return Ok(await FetchDetailsSurvey.GetDetailsSurvey(id));
         }
 
-        // get details
+        // restore surveys
         [Authorize(Roles = "admin")]
         [HttpGet]
         [Route("api/v1/admin/surveys_restore/{id}")]
@@ -121,7 +121,7 @@ namespace WebapiToken.Controllers
         {
             try
             {
-                var checkTitle = db.surveys.Where(a => a.title == form.title).FirstOrDefault();
+                var checkTitle = db.surveys.Where(a => a.title.ToString().ToLower() == form.title.ToString().ToLower()).FirstOrDefault();
                 if(checkTitle == null)
                 {
                     form.create_at = DateTime.Now;
@@ -162,17 +162,26 @@ namespace WebapiToken.Controllers
                 var findSurvey = db.surveys.Where(a => a.id == id).FirstOrDefault();
                 if(findSurvey != null)
                 {
-                    findSurvey.title = form.title;
-                    findSurvey.description = form.description;
-                    findSurvey.date_start = form.date_start;
-                    int check = await db.SaveChangesAsync();
-                    if(check > 0)
+                    var checkTitle = db.surveys
+                        .Where(a => a.title.ToString().ToLower() == form.title.ToString().ToLower() && a.id != id).FirstOrDefault();
+                    if (checkTitle == null)
                     {
-                        return Ok(await FetchDetailsSurvey.GetDetailsSurvey(id));
+                        findSurvey.title = form.title;
+                        findSurvey.description = form.description;
+                        findSurvey.date_start = form.date_start;
+                        int check = await db.SaveChangesAsync();
+                        if (check > 0)
+                        {
+                            return Ok(await FetchDetailsSurvey.GetDetailsSurvey(id));
+                        }
+                        else
+                        {
+                            return BadRequest("Edit survey fails.");
+                        }
                     }
                     else
                     {
-                        return BadRequest("Edit survey fails.");
+                        return BadRequest("Survey title duplicate.");
                     }
                 }
                 else

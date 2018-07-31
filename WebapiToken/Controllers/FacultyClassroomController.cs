@@ -20,14 +20,22 @@ namespace WebapiToken.Controllers
         {
             try
             {
-
+                //find duplicate faculty code
+                var faculty = db.faculties.Where(a => a.faculty_code.ToString().ToUpper() == form.faculty_code.ToString().ToUpper()).FirstOrDefault();
+                if (faculty == null)
+                {
                     form.create_at = DateTime.Now;
                     db.Entry(form).State = System.Data.Entity.EntityState.Added;
                     int check = await db.SaveChangesAsync();
                     if (check > 0)
-                    return Ok(await ListFaculty());
-                else
+                        return Ok(await ListFaculty());
+                    else
                         return BadRequest("Create faculty error");
+                }
+                else
+                {
+                    return BadRequest("Duplicate faculty");
+                }
             }
             catch
             {
@@ -46,15 +54,24 @@ namespace WebapiToken.Controllers
                 var findFac = db.faculties.Where(a=>a.id == id).FirstOrDefault();
                 if (findFac != null)
                 {
-                    findFac.faculty_name = form.faculty_name;
-                    findFac.faculty_code = form.faculty_code;
-                    findFac.faculty_description = form.faculty_description;
-                    db.Entry(findFac).State = System.Data.Entity.EntityState.Modified;
-                    int check = await db.SaveChangesAsync();
-                    if (check > 0)
-                        return Ok(await ListFaculty());
+                    //find duplicate faculty code
+                    var faculty = db.faculties.Where(a => a.faculty_code.ToString().ToUpper() == form.faculty_code.ToString().ToUpper() && a.id != id).FirstOrDefault();
+                    if (faculty == null)
+                    {
+                        findFac.faculty_name = form.faculty_name;
+                        findFac.faculty_code = form.faculty_code;
+                        findFac.faculty_description = form.faculty_description;
+                        db.Entry(findFac).State = System.Data.Entity.EntityState.Modified;
+                        int check = await db.SaveChangesAsync();
+                        if (check > 0)
+                            return Ok(await ListFaculty());
+                        else
+                            return BadRequest("Update faculty error");
+                    }
                     else
-                        return BadRequest("Update faculty error");
+                    {
+                        return BadRequest("Duplicate faculty");
+                    }
                 }
                 else
                 {
@@ -131,13 +148,22 @@ namespace WebapiToken.Controllers
         {
             try
             {
-                form.create_at = DateTime.Now;
-                db.Entry(form).State = System.Data.Entity.EntityState.Added;
-                int check = await db.SaveChangesAsync();
-                if (check > 0)
-                    return Ok(await ListClassroom());
+                //find check duplicate
+                var classroom = db.classrooms.Where(a => a.class_code == form.class_code).FirstOrDefault();
+                if (classroom == null)
+                {
+                    form.create_at = DateTime.Now;
+                    db.Entry(form).State = System.Data.Entity.EntityState.Added;
+                    int check = await db.SaveChangesAsync();
+                    if (check > 0)
+                        return Ok(await ListClassroom());
+                    else
+                        return BadRequest("Create classroom fails.");
+                }
                 else
-                    return BadRequest("Create classroom fails.");
+                {
+                    return BadRequest("Class code duplicate.");
+                }
             }
             catch
             {
@@ -156,14 +182,23 @@ namespace WebapiToken.Controllers
                 var findClass = db.classrooms.Where(a => a.id == id).FirstOrDefault();
                 if (findClass != null)
                 {
-                    findClass.class_code = form.class_code;
-                    findClass.faculty_id = form.faculty_id;
-                    db.Entry(findClass).State = System.Data.Entity.EntityState.Modified;
-                    int check = await db.SaveChangesAsync();
-                    if (check > 0)
-                        return Ok(await ListClassroom());
+                    //find check duplicate
+                    var classroom = db.classrooms.Where(a => a.class_code == form.class_code && a.id != id).FirstOrDefault();
+                    if (classroom == null)
+                    {
+                        findClass.class_code = form.class_code;
+                        findClass.faculty_id = form.faculty_id;
+                        db.Entry(findClass).State = System.Data.Entity.EntityState.Modified;
+                        int check = await db.SaveChangesAsync();
+                        if (check > 0)
+                            return Ok(await ListClassroom());
+                        else
+                            return BadRequest("Create classroom fails.");
+                    }
                     else
-                        return BadRequest("Create classroom fails.");
+                    {
+                        return BadRequest("Class code duplicate.");
+                    }
                 }
                 else
                 {
